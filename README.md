@@ -8,10 +8,11 @@ Official implementation of *"Universal transition state generation for general o
 - General-Purpose Design:​ Built to handle the complexity of real-world synthetic chemistry, including organometallic catalysis and diverse reaction types.
 - From 2D to 3D:​ The UniTS-Gen​ model generates accurate 3D TS geometries using only 2D molecular graphs and reactive site indices as input.
 
-## Showcase
+## ✨️ Showcase
 Here, we display some of the generation TS trajatories (from Formula-OOS test set) from the UniTS-Gen model.
 
 | OOS demo1 | OOS demo2 | OOS demo3 | OOS demo4 |
 |:---------:|:---------:|:---------:|:---------:|
 | <img src="gif/b5_s24.gif" width="300"> | <img src="gif/b8_s10.gif" width="300"> | <img src="gif/b11_s2.gif" width="300"> | <img src="gif/b11_s7.gif" width="300"> |
 
+## 🚀 Quick Start
