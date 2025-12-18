@@ -1,4 +1,6 @@
 dataset/
 build/
+dev/
+save_model/
 *.egg-info
 *.pyc
