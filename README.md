@@ -16,3 +16,24 @@ Here, we display some of the generation TS trajatories (from Formula-OOS test se
 | <img src="gif/b5_s24.gif" width="300"> | <img src="gif/b8_s10.gif" width="300"> | <img src="gif/b11_s2.gif" width="300"> | <img src="gif/b11_s7.gif" width="300"> |
 
 ## 🚀 Quick Start
+### Installation
+```
+conda create -n units python=3.11
+conda activate units
+pip install -r requirements.txt -f https://data.pyg.org/whl/torch-2.4.0+cu124.html --extra-index-url https://download.pytorch.org/whl/cu124
+git clone https://github.com/licheng-xu-echo/UniTS.git
+cd UniTS
+pip install .
+```
+**Note**: All codes were tested under Ubuntu 22.04.2 LTS
+
+## ⚛️ Model Training and Testing
+```bash
+# train model
+python -u train.py --config_file ./config/train_hiegnn_unitslib_1GPU.json
+```
+
+```bash
+# sample trajactory
+python -u traj_sampling.py --model_root ./model_path --model_tag units_hiegnn --batch_size 32
+```
