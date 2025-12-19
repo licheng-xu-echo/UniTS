@@ -1,6 +1,12 @@
-dataset/
+dataset/*.npy
+dataset/*.tar.gz
+dataset/processed
+dataset/*.txt
 build/
 dev/
 save_model/
+sample_traj/
+notebook/geom_files/
+model_path/
 *.egg-info
 *.pyc
