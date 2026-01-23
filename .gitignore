@@ -7,6 +7,9 @@ dev/
 save_model/
 sample_traj/
 notebook/geom_files/
+notebook/*.sdf
+notebook/*.xyz
 model_path/
 *.egg-info
 *.pyc
+*.tar.gz

@@ -1,7 +1,7 @@
 # UniTS
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-orange)](https://ubuntu.com/) [![Python 3.11](https://img.shields.io/badge/python-3.11-blue)](https://www.python.org/) [![PyTorch 2.4.0+cu124](https://img.shields.io/badge/PyTorch-2.4.0%2Bcu124-red)](https://pytorch.org/) [![PyG 2.6.1](https://img.shields.io/badge/torch__geometric-2.6.1-green)](https://pytorch-geometric.readthedocs.io/) [![RDKit](https://img.shields.io/badge/Chemoinformatics-RDKit-blueviolet)](https://www.rdkit.org/) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Official implementation of *"Universal transition state generation for general organic mechanistic studies"*. The corresponding paper is under review.
+Official implementation of *"A unified framework for automated transition state generation enabling mechanistic exploration in organic synthesis"*. The corresponding paper is under review.
 
 ## 📌 Key Features
 - Comprehensive Pipeline:​ UniTS combines the UniTS-Lib​ dataset with the UniTS-Gen​ model, offering a complete workflow from TS data to TS generation.
@@ -30,6 +30,9 @@ cd UniTS
 pip install .
 ```
 **Note**: All codes were tested under Ubuntu 22.04.2 LTS
+
+### Model weights and dataset
+During the peer-review period, the model weights and the UniTS dataset are available upon request. Please contact us via [email](mailto:xulicheng@sais.org.cn) if you are interested.
 
 ## ⚛️ Model Training and Testing
 ```bash
