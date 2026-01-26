@@ -10,6 +10,7 @@ notebook/geom_files/
 notebook/*.sdf
 notebook/*.xyz
 model_path/
+rmsd_calc/
 *.egg-info
 *.pyc
 *.tar.gz
