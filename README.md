@@ -1,7 +1,7 @@
 # UniTS
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-orange)](https://ubuntu.com/) [![Python 3.11](https://img.shields.io/badge/python-3.11-blue)](https://www.python.org/) [![PyTorch 2.4.0+cu124](https://img.shields.io/badge/PyTorch-2.4.0%2Bcu124-red)](https://pytorch.org/) [![PyG 2.6.1](https://img.shields.io/badge/torch__geometric-2.6.1-green)](https://pytorch-geometric.readthedocs.io/) [![RDKit](https://img.shields.io/badge/Chemoinformatics-RDKit-blueviolet)](https://www.rdkit.org/) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Official implementation of *"A unified framework for automated transition state generation to accelerate mechanistic exploration in organic synthesis"*. The corresponding paper is under review. Preprint is available at [ChemRxiv](https://doi.org/10.26434/chemrxiv.10001667/v1).
+Official implementation of *"A unified framework for automated transition state generation to accelerate mechanistic exploration in organic synthesis"*. The corresponding paper is under review. Preprint version is available at [ChemRxiv](https://doi.org/10.26434/chemrxiv.10001667/v1).
 
 ## 📌 Key Features
 - Comprehensive Pipeline:​ UniTS combines the UniTS-Lib​ dataset with the UniTS-Gen​ model, offering a complete workflow from TS data to TS generation.
