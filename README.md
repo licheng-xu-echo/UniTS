@@ -56,16 +56,15 @@ If you find this code useful in your research, please consider citing our prepri
 Li-Cheng Xu, Junyi An, Weiqi Liu, et al. A unified framework for automated transition state generation to accelerate mechanistic exploration in organic synthesis. *ChemRxiv* **2026**, DOI: 10.26434/chemrxiv.10001667/v1.
 
 ```
-@article{
-xu_2026_units,
-author = {Li-Cheng Xu  and Junyi An  and Weiqi Liu  and Yun-Fei Shi  and Chong-Lei Ji  and Fenglei Cao  and Yuan Qi },
-title = {A unified framework for automated transition state generation to accelerate mechanistic exploration in organic synthesis},
-journal = {ChemRxiv},
-volume = {2026},
-number = {0128},
-pages = {},
-year = {2026},
-doi = {10.26434/chemrxiv.10001667/v1},
-URL = {https://chemrxiv.org/doi/abs/10.26434/chemrxiv.10001667/v1},
-eprint = {https://chemrxiv.org/doi/pdf/10.26434/chemrxiv.10001667/v1}}
+@article{xu_2026_units,
+    author = {Li-Cheng Xu  and Junyi An  and Weiqi Liu  and Yun-Fei Shi  and Chong-Lei Ji  and Fenglei Cao  and Yuan Qi },
+    title = {A unified framework for automated transition state generation to accelerate mechanistic exploration in organic synthesis},
+    journal = {ChemRxiv},
+    volume = {2026},
+    number = {0128},
+    pages = {},
+    year = {2026},
+    doi = {10.26434/chemrxiv.10001667/v1},
+    URL = {https://chemrxiv.org/doi/abs/10.26434/chemrxiv.10001667/v1},
+    eprint = {https://chemrxiv.org/doi/pdf/10.26434/chemrxiv.10001667/v1}}
 ```
