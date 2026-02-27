@@ -36,8 +36,11 @@ During the peer-review period, the model weights and the UniTS dataset are avail
 
 ## ⚛️ Model Training and Testing
 ```bash
-# train model
+# train model (single GPU)
 python -u train.py --config_file ./config/train_hiegnn_unitslib_1GPU.json
+
+# train model (multi-GPU, 2 GPUs example)
+torchrun --nproc_per_node=2 train.py --config_file ./config/train_hiegnn_unitslib_2GPU.json
 ```
 
 ```bash
@@ -47,7 +50,7 @@ python -u traj_sampling.py --model_root ./model_path --model_tag units_hiegnn --
 
 ```bash
 # calculate RMSD based on sampled trajactory
-python -u calc_rmsd.py --result_path ./sample_traj --result_tag traj-sample-repeat-10-units_hiegnn-xxxx-xx-xx-xx-xx-xx --batch_size 32
+python -u calc_rmsd.py --result_path ./sample_traj --result_tag traj-sample-repeat-10-units_hiegnn-xxxx-xx-xx-xx-xx-xx
 ```
 
 ## 📚 Citation

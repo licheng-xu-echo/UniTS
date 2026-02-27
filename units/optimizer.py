@@ -4,16 +4,31 @@
 
 import math
 from collections.abc import MutableMapping
-from typing import Optional
+from typing import Optional, Union, List, Dict, Any
 
 import torch
 from torch import Tensor
 
-from torch.optim.optimizer import (
-    _disable_dynamo_if_unsupported,
-    Optimizer,
-    ParamsT,
-)
+from torch.optim.optimizer import Optimizer
+
+# Try to import newer PyTorch types
+try:
+    from torch.optim.optimizer import ParamsT
+except ImportError:
+    # Fallback for older PyTorch versions
+    ParamsT = Union[torch.Tensor, Dict[str, Any], List[Dict[str, Any]]]
+
+# Try to import _disable_dynamo_if_unsupported for newer PyTorch versions
+try:
+    from torch.optim.optimizer import _disable_dynamo_if_unsupported
+    HAS_DYNAMO = True
+except ImportError:
+    # Fallback for older PyTorch versions
+    HAS_DYNAMO = False
+    def _disable_dynamo_if_unsupported(single_tensor_fn=None):
+        def decorator(func):
+            return func
+        return decorator
 
 
 __all__ = ["Muon"]

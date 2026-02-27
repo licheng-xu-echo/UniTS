@@ -1,4 +1,7 @@
 import torch
+import torch.distributed as dist
+from torch.nn.parallel import DistributedDataParallel as DDP
+from torch.utils.data.distributed import DistributedSampler
 from units.data import MultiDataset,get_idx_split,get_fnidx_split,MultiDatasetV2,MultiDataset1x
 from copy import deepcopy
 from torch_geometric.data import DataLoader
@@ -15,7 +18,28 @@ import os,logging
 from datetime import datetime
 from json import load
 
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+def setup_distributed():
+    """Initialize distributed training"""
+    if 'RANK' in os.environ and 'WORLD_SIZE' in os.environ:
+        rank = int(os.environ['RANK'])
+        world_size = int(os.environ['WORLD_SIZE'])
+        gpu = int(os.environ['LOCAL_RANK'])
+        torch.cuda.set_device(gpu)
+        dist.init_process_group(
+            backend='nccl',
+            init_method='env://',
+            world_size=world_size,
+            rank=rank
+        )
+        return True, rank, world_size, gpu
+    return False, 0, 1, 0
+
+# Initialize distributed training
+distributed, rank, world_size, gpu = setup_distributed()
+if distributed:
+    device = torch.device(f'cuda:{gpu}')
+else:
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     
 def main():
 
@@ -60,8 +84,9 @@ def main():
     else:
         dataset = dataset[sf_index]
     if not args.specific_test:
-        print("[INFO] Splitting dataset into train, valid and test")
-        print(len(dataset))
+        if rank == 0:
+            print("[INFO] Splitting dataset into train, valid and test")
+            print(len(dataset))
         if not args.data_enhance:
             split_ids_map = get_idx_split(len(dataset), 
                                         int(args.train_ratio*len(dataset)), 
@@ -78,7 +103,8 @@ def main():
         test_dataset = dataset[split_ids_map['test']]
     else:
         assert args.test_name_regrex != ''
-        print("[INFO] Splitting dataset into train, valid. Test is specified")
+        if rank == 0:
+            print("[INFO] Splitting dataset into train, valid. Test is specified")
         assert abs(args.train_ratio + args.valid_ratio - 1.0) < 1e-6
         if not args.data_enhance:
             split_ids_map = get_idx_split(len(dataset), 
@@ -103,10 +129,22 @@ def main():
             test_dataset = MultiDataset1x(root=args.dataset_path, name_regrex=args.test_name_regrex, link_rc=args.link_rc,
                                           iptgraph_type=args.iptgraph_type)
 
+    # Create distributed samplers for train dataset
+    if distributed:
+        train_sampler = DistributedSampler(train_dataset, num_replicas=world_size, rank=rank, shuffle=True)
+        valid_sampler = DistributedSampler(valid_dataset, num_replicas=world_size, rank=rank, shuffle=False)
+        test_sampler = DistributedSampler(test_dataset, num_replicas=world_size, rank=rank, shuffle=False)
         
-    train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
-    valid_dataloader = DataLoader(valid_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers)
-    test_dataloader = DataLoader(test_dataset, batch_size=args.batch_size//args.test_reduce_ratio, shuffle=False, num_workers=args.num_workers)
+        train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, sampler=train_sampler, 
+                                      num_workers=args.num_workers, pin_memory=True)
+        valid_dataloader = DataLoader(valid_dataset, batch_size=args.batch_size, sampler=valid_sampler, 
+                                      num_workers=args.num_workers, pin_memory=True)
+        test_dataloader = DataLoader(test_dataset, batch_size=args.batch_size//args.test_reduce_ratio, 
+                                     sampler=test_sampler, num_workers=args.num_workers, pin_memory=True)
+    else:
+        train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
+        valid_dataloader = DataLoader(valid_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers)
+        test_dataloader = DataLoader(test_dataset, batch_size=args.batch_size//args.test_reduce_ratio, shuffle=False, num_workers=args.num_workers)
 
     #dataloader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
     tot_train_steps = len(train_dataloader) * args.n_epochs
@@ -245,8 +283,13 @@ def main():
     gradnorm_queue = Queue()
     gradnorm_queue.add(3000)  # Add large value that will be flushed.
 
-    if args.dp and torch.cuda.device_count() > 1:
-        print(f'Training using {torch.cuda.device_count()} GPUs')
+    # Use DDP for distributed training, fallback to DataParallel for non-distributed multi-GPU
+    if distributed:
+        if rank == 0:
+            print(f'Training using {world_size} GPUs with DistributedDataParallel')
+        model_dp = DDP(model, device_ids=[gpu], output_device=gpu, find_unused_parameters=True)
+    elif args.dp and torch.cuda.device_count() > 1:
+        print(f'Training using {torch.cuda.device_count()} GPUs with DataParallel')
         model_dp = torch.nn.DataParallel(model.cpu())
         model_dp = model_dp.cuda()
     else:
@@ -257,7 +300,9 @@ def main():
         model_ema = deepcopy(model)
         ema = EMA(args.ema_decay)
 
-        if args.dp and torch.cuda.device_count() > 1:
+        if distributed:
+            model_ema_dp = DDP(model_ema, device_ids=[gpu], output_device=gpu, find_unused_parameters=True)
+        elif args.dp and torch.cuda.device_count() > 1:
             model_ema_dp = torch.nn.DataParallel(model_ema)
         else:
             model_ema_dp = model_ema
@@ -277,30 +322,57 @@ def main():
 
 
     save_path = f"{args.save_path}/{args.tag}-{datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}"
-    os.makedirs(save_path, exist_ok=True)
-    setup_logger(save_path)
-    
-    if args.dynamic_type == 'hiegnn':
-        logging.info(f"[WARNING] dynamic_type is HiEGNN. lmax_attr, lmax_h, add_angle_info are ignored")
-    logging.info(f"[INFO] Saving to {save_path}")
-    if not args.specific_test:
-        logging.info(f"[INFO] No specific test, which is random splitted from full dataset")
+    if rank == 0:
+        os.makedirs(save_path, exist_ok=True)
+        setup_logger(save_path)
+        
+        if args.dynamic_type == 'hiegnn':
+            logging.info(f"[WARNING] dynamic_type is HiEGNN. lmax_attr, lmax_h, add_angle_info are ignored")
+        logging.info(f"[INFO] Saving to {save_path}")
+        if not args.specific_test:
+            logging.info(f"[INFO] No specific test, which is random splitted from full dataset")
+        else:
+            logging.info(f"[INFO] Specific test, which is loaded from {args.test_name_regrex}")
+        logging.info(f"Train: {len(train_dataset)}, Valid: {len(valid_dataset)}, Test: {len(test_dataset)}")
+        np.save(f'{save_path}/args.npy', args.__dict__)
+        logging.info(str(args.__dict__))
     else:
-        logging.info(f"[INFO] Specific test, which is loaded from {args.test_name_regrex}")
-    logging.info(f"Train: {len(train_dataset)}, Valid: {len(valid_dataset)}, Test: {len(test_dataset)}")
-    np.save(f'{save_path}/args.npy', args.__dict__)
-    logging.info(str(args.__dict__))
+        # Setup minimal logging for non-rank 0 processes
+        logging.basicConfig(level=logging.WARNING)
 
+    # Synchronize all processes before starting training
+    if distributed:
+        dist.barrier()
 
     for epoch in range(0, args.n_epochs):
+        # Set epoch for distributed sampler
+        if distributed:
+            train_dataloader.sampler.set_epoch(epoch)
+        
         best_nll,best_loss = train_epoch(args=args, loader=train_dataloader, epoch=epoch, model=model, model_dp=model_dp,
                     model_ema=model_ema, ema=ema, optim=optim, scheduler=scheduler, gradnorm_queue=gradnorm_queue,device=device,best_nll=best_nll,
                     best_loss=best_loss,save_path=save_path,tot_epoch=args.n_epochs)
-        best_nll_val, best_loss_val, best_rcloss_val = test(args, loader=valid_dataloader, epoch=epoch, model_dp=model_dp, model_ema=model_ema, 
-                                               optim=optim, scheduler=scheduler, device=device, best_nll=best_nll_val, best_loss=best_loss_val, 
-                                               best_rcloss=best_rcloss_val,save_path=save_path, tot_epoch=args.n_epochs, mode='validation')
-        best_nll_test, best_loss_test, best_rcloss_test = test(args, loader=test_dataloader, epoch=epoch, model_dp=model_dp, model_ema=model_ema, 
-                                             optim=optim, scheduler=scheduler, device=device, best_nll=best_nll_test, best_loss=best_loss_test, 
-                                             best_rcloss=best_rcloss_test,save_path=save_path, tot_epoch=args.n_epochs, mode='test')
+        
+        # Only rank 0 performs validation and testing
+        if rank == 0:
+            best_nll_val, best_loss_val, best_rcloss_val = test(args, loader=valid_dataloader, epoch=epoch, model_dp=model_dp, model_ema=model_ema, 
+                                                   optim=optim, scheduler=scheduler, device=device, best_nll=best_nll_val, best_loss=best_loss_val, 
+                                                   best_rcloss=best_rcloss_val,save_path=save_path, tot_epoch=args.n_epochs, mode='validation')
+            best_nll_test, best_loss_test, best_rcloss_test = test(args, loader=test_dataloader, epoch=epoch, model_dp=model_dp, model_ema=model_ema, 
+                                                 optim=optim, scheduler=scheduler, device=device, best_nll=best_nll_test, best_loss=best_loss_test, 
+                                                 best_rcloss=best_rcloss_test,save_path=save_path, tot_epoch=args.n_epochs, mode='test')
+        else:
+            # Non-rank 0 processes still need to run test to maintain synchronization
+            # but they don't save or log
+            _ = test(args, loader=valid_dataloader, epoch=epoch, model_dp=model_dp, model_ema=model_ema, 
+                     optim=optim, scheduler=scheduler, device=device, best_nll=best_nll_val, best_loss=best_loss_val, 
+                     best_rcloss=best_rcloss_val,save_path=save_path, tot_epoch=args.n_epochs, mode='validation')
+            _ = test(args, loader=test_dataloader, epoch=epoch, model_dp=model_dp, model_ema=model_ema, 
+                     optim=optim, scheduler=scheduler, device=device, best_nll=best_nll_test, best_loss=best_loss_test, 
+                     best_rcloss=best_rcloss_test,save_path=save_path, tot_epoch=args.n_epochs, mode='test')
+    
+    # Cleanup distributed training
+    if distributed:
+        dist.destroy_process_group()
 if __name__ == '__main__':
     main()

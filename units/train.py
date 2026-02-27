@@ -17,6 +17,13 @@ def test(args, loader, epoch, model_dp, model_ema, optim, scheduler, device, bes
     dist_loss_epoch = []
     angle_loss_epoch = []
     n_iterations = len(loader)
+    
+    # Get the actual model from DDP wrapper if needed
+    if hasattr(model_ema, 'module'):
+        actual_model_ema = model_ema.module
+    else:
+        actual_model_ema = model_ema
+    
     for i, data in enumerate(loader):
         data = data.to(device)
         nll, reg_term, mean_abs_z, loss_, rc_loss, dist_loss, angle_loss = compute_loss_and_nll(args, model_dp, data)
@@ -33,7 +40,7 @@ def test(args, loader, epoch, model_dp, model_ema, optim, scheduler, device, bes
     if mode == 'validation' and np.mean(loss_epoch) < best_loss:
         logging.info(f"!!!!!!!!!!!!!![INFO] New best validation loss: {np.mean(loss_epoch):.4f}, saving model...!!!!!!!!!!!!!!")
         best_loss = np.mean(loss_epoch)
-        state_dict = {'model':model_ema.state_dict(), 'optim':optim.state_dict(), 'scheduler':scheduler.state_dict(), 'epoch':epoch}
+        state_dict = {'model':actual_model_ema.state_dict(), 'optim':optim.state_dict(), 'scheduler':scheduler.state_dict(), 'epoch':epoch}
 
         torch.save(state_dict, f'{save_path}/best_full_model.pth')
         torch.save(state_dict, f'{save_path}/model_full_{epoch}.pth')
@@ -44,7 +51,7 @@ def test(args, loader, epoch, model_dp, model_ema, optim, scheduler, device, bes
     if mode == 'validation' and np.mean(rc_loss_epoch) < best_rcloss:
         logging.info(f"~~~~~~~~~~~[INFO] New best validation reactive center loss: {np.mean(rc_loss_epoch):.4f}, saving model...~~~~~~~~~~~")
         best_rcloss = np.mean(rc_loss_epoch)
-        state_dict = {'model':model_ema.state_dict(), 'optim':optim.state_dict(), 'scheduler':scheduler.state_dict(), 'epoch':epoch}
+        state_dict = {'model':actual_model_ema.state_dict(), 'optim':optim.state_dict(), 'scheduler':scheduler.state_dict(), 'epoch':epoch}
         torch.save(state_dict, f'{save_path}/best_rcfull_model.pth')
         torch.save(state_dict, f'{save_path}/model_rcfull_{epoch}.pth')
         model_files = sorted(glob.glob(f'{save_path}/model_rcfull_*.pth'), key=lambda x: int(x.split("_")[-1].split(".")[0]))
@@ -68,6 +75,18 @@ def train_epoch(args, loader, epoch, model,
     dist_loss_epoch = []
     angle_loss_epoch = []
     n_iterations = len(loader)
+    
+    # Get the actual model from DDP wrapper if needed
+    if hasattr(model_dp, 'module'):
+        actual_model = model_dp.module
+    else:
+        actual_model = model_dp
+        
+    if hasattr(model_ema, 'module'):
+        actual_model_ema = model_ema.module
+    else:
+        actual_model_ema = model_ema
+    
     for i, data in enumerate(loader):
         data = data.to(device)
         optim.zero_grad()
@@ -79,7 +98,7 @@ def train_epoch(args, loader, epoch, model,
         loss.backward()
 
         if args.clip_grad:
-            grad_norm = gradient_clipping(model, gradnorm_queue)
+            grad_norm = gradient_clipping(actual_model, gradnorm_queue)
         else:
             grad_norm = 0.
 
@@ -87,7 +106,7 @@ def train_epoch(args, loader, epoch, model,
 
         # Update EMA if enabled.
         if args.ema_decay > 0:
-            ema.update_model_average(model_ema, model)
+            ema.update_model_average(actual_model_ema, actual_model)
 
         if i % args.n_report_steps == 0:
             logging.info(f"[INFO] Epoch: {epoch}, iter: {i}/{n_iterations}, Loss {loss.item():.4f}, rc loss {rc_loss.item():.4f}, dist loss {dist_loss.item():.4f}, angle loss {angle_loss.item():.4f}, GradNorm: {grad_norm:.1f}")
