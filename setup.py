@@ -3,7 +3,7 @@ from setuptools import setup,find_packages
 
 setup(
     name="units",
-    version="0.15.0",
+    version="0.16.0",
     description="A universal diffusion model for transition state geometry generation",
     keywords=[],
     url="https://github.com/licheng-xu-echo/UniTS",

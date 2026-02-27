@@ -39,7 +39,7 @@ During the peer-review period, the model weights and the UniTS dataset are avail
 # train model (single GPU)
 python -u train.py --config_file ./config/train_hiegnn_unitslib_1GPU.json
 
-# train model (multi-GPU, 2 GPUs example)
+# train model (multi-GPU, 2 GPUs example), "1GPU.json" also works, "2GPU.json" has larger batch_size
 torchrun --nproc_per_node=2 train.py --config_file ./config/train_hiegnn_unitslib_2GPU.json
 ```
 
