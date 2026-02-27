@@ -208,7 +208,7 @@ class GammaNetwork(torch.nn.Module):
         self.l2 = PositiveLinear(1, 1024)
         self.l3 = PositiveLinear(1024, 1)
 
-        self.gamma_0 = torch.nn.Parameter(torch.tensor([0.0]))   ## 原始版本是-5.0，影响初始噪声大小，-5.0太小了
+        self.gamma_0 = torch.nn.Parameter(torch.tensor([0.0]))   ## Original version is -5.0, affects initial noise size, -5.0 is too small
         self.gamma_1 = torch.nn.Parameter(torch.tensor([10.]))
         self.show_schedule()
 
@@ -548,7 +548,7 @@ class EnVariationalDiffusion(torch.nn.Module):
         return log_p_xh_given_z
 
     def time_step_sample(self, x, lowest_t, power=4.0, reverse=False):
-        # control the probability of sampling small t_int, larger the value, the higher the probability of sampling small t_int
+        # Control the probability of sampling small t_int, larger the value, the higher the probability of sampling small t_int
         #power = 4.0  
         t_candidates = torch.arange(lowest_t, self.T + 1, device=x.device).float()  
         if not reverse:
@@ -1000,7 +1000,7 @@ class EnVariationalDiffusion(torch.nn.Module):
         z = torch.cat([z_x,h],dim=-1)
 
         if self.use_context:
-            # context 在随时间降噪过程中不能变
+            # context should not change during the denoising process over time
             context = self.mol_encoder(data.x[:,:-1],data.edge_index,data.edge_attr)        
             context,_ = split_and_padding(context,data.batch,self.context_dim)
         else:

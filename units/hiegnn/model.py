@@ -95,10 +95,10 @@ class HiEGNN_dynamics_DiffMM(nn.Module):
         # xh = xh.view(bs * n_nodes, -1).clone() * atom_mask
         #print(xh.shape,batch.shape)
         xh = xh[atom_mask.bool().squeeze(2)]
-        x = xh[:, :self.n_dims].clone()  # 噪声坐标
-        h = xh[:, self.n_dims:].clone()  # 节点特征（原子类型）
+        x = xh[:, :self.n_dims].clone()  # noise coordinates
+        h = xh[:, self.n_dims:].clone()  # node features (atom types)
 
-        # 1. 准备节点特征
+        # 1. prepare node features
         if self.condition_time:
             if np.prod(t.size()) == 1:
                 h_time = self.time_embed(t.item() * torch.ones(xh.shape[0], 1, device=xh.device))

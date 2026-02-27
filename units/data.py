@@ -98,81 +98,81 @@ def get_split_mol_idx(mol, pairs_to_remove):
 
 def reorder_atoms_preserve_all_properties(mol, new_order):
     """
-    重新排列原子顺序，同时保留所有分子属性
+    Reorder atom sequence while preserving all molecular properties
     
-    参数:
-    mol: 原始Mol对象
-    new_order: 新的原子顺序列表
+    Parameters:
+    mol: Original Mol object
+    new_order: New atom order list
     
-    返回:
-    重新排序后的新Mol对象，原子映射字典
+    Returns:
+    Reordered new Mol object, atom mapping dictionary
     """
-    # 创建新的可写分子
+    # Create new writable molecule
     new_mol = Chem.RWMol()
     
-    # 存储原子映射 (旧索引 -> 新索引)
+    # Store atom mapping (old index -> new index)
     atom_mapping = {}
     
-    # 1. 按照新顺序添加原子，并复制所有原子属性
+    # 1. Add atoms in new order and copy all atom properties
     for new_idx, old_idx in enumerate(new_order):
         old_atom = mol.GetAtomWithIdx(old_idx)
         #new_atom = copy.deepcopy(old_atom)
         new_idx_in_mol = new_mol.AddAtom(old_atom)
         atom_mapping[old_idx] = new_idx_in_mol
     
-    # 2. 添加键，并复制所有键属性
+    # 2. Add bonds and copy all bond properties
     for bond in mol.GetBonds():
         begin_old = bond.GetBeginAtomIdx()
         end_old = bond.GetEndAtomIdx()
         begin_new = atom_mapping[begin_old]
         end_new = atom_mapping[end_old]
         
-        # 创建新的键对象并复制所有属性
+        # Create new bond object and copy all properties
         new_bond = new_mol.GetBondBetweenAtoms(begin_new, end_new)
         if new_bond is None:
             new_bond = new_mol.AddBond(begin_new, end_new, bond.GetBondType())
             new_bond = new_mol.GetBondWithIdx(new_mol.GetNumBonds()-1)
         
-        # 复制键属性
+        # Copy bond properties
         new_bond.SetBondType(bond.GetBondType())
         new_bond.SetIsAromatic(bond.GetIsAromatic())
         new_bond.SetIsConjugated(bond.GetIsConjugated())
         new_bond.SetStereo(bond.GetStereo())
         new_bond.SetBondDir(bond.GetBondDir())
         
-        # 复制键的立体化学信息
+        # Copy bond stereochemistry information
         for prop_name in bond.GetPropNames():
             prop_value = bond.GetProp(prop_name)
             new_bond.SetProp(prop_name, prop_value)
     
-    # 3. 转换为完整的Mol对象
+    # 3. Convert to complete Mol object
     new_mol = new_mol.GetMol()
     
-    # 4. 复制构象信息（如果有）
+    # 4. Copy conformation information (if any)
     if mol.GetNumConformers() > 0:
         for conf in mol.GetConformers():
             new_conf = Chem.Conformer(new_mol.GetNumAtoms())
             conf_id = conf.GetId()
             new_conf.SetId(conf_id)
             
-            # 复制每个原子的3D坐标
+            # Copy 3D coordinates for each atom
             for old_idx, new_idx in atom_mapping.items():
                 pos = conf.GetAtomPosition(old_idx)
                 new_conf.SetAtomPosition(new_idx, pos)
             
-            # 复制构象属性
+            # Copy conformation properties
             for prop_name in conf.GetPropNames():
                 prop_value = conf.GetProp(prop_name)
                 new_conf.SetProp(prop_name, prop_value)
             
             new_mol.AddConformer(new_conf)
     
-    # 5. 复制分子级别的属性
+    # 5. Copy molecular-level properties
     for prop_name in mol.GetPropNames():
         prop_value = mol.GetProp(prop_name)
         new_mol.SetProp(prop_name, prop_value)
     
-    '''# 6. 复制环信息
+    '''# 6. Copy ring information
     if mol.GetRingInfo().IsInitialized():
         new_mol.GetRingInfo().Initialize()
         rings = mol.GetRingInfo().AtomRings()
@@ -180,14 +180,14 @@ def reorder_atoms_preserve_all_properties(mol, new_order):
             new_ring = [atom_mapping[atom_idx] for atom_idx in ring]
             new_mol.GetRingInfo().AddRing(new_ring)'''
     
-    # 7. 复制手性信息
+    # 7. Copy chirality information
     try:
-        # 尝试复制手性标签
+        # Attempt to copy chirality tags
         Chem.AssignStereochemistry(new_mol, cleanIt=False, force=False)
     except:
         pass
     
-    # 8. 复制其他分子属性
+    # 8. Copy other molecular properties
     try:
         new_mol.SetNumExplicitHs(mol.GetNumExplicitHs())
     except:
@@ -887,7 +887,7 @@ def generate_rotations():
     rotations = []
     angles = [0, 60, 120, 180, 240, 300]
     
-    # 生成一些有代表性的旋转组合
+    # Generate some representative rotation combinations
     for x_angle in angles:
         for y_angle in angles:
             for z_angle in angles:
@@ -954,7 +954,7 @@ def find_best_position(existing_coords, new_coords, min_distance):
     return best_pos, best_rotation
 
 def merge_positions(coords_lst, min_distance=1.0):
-    """merge multiple molecules and ensure no overlap"""
+    """Merge multiple molecules and ensure no overlap"""
     combined_coords = coords_lst[0].copy()
     warn_tag = False
     

@@ -226,7 +226,7 @@ def sample_gaussian_with_mask(size, device, node_mask):
 
 def generate_index_tensor(tensor):
     """
-    index tensor generation function
+    Index tensor generation function
     Args:
         tensor (torch.Tensor): input tensor
 

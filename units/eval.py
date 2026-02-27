@@ -174,7 +174,7 @@ class GeneticOrderMatcher(KabschMatcher):
 
 def display_atom_indices(mol, size=(300, 300)):
     """
-    show atom index
+    Display atom indices
     """
     opts = MolDrawOptions()
     opts.addAtomIndices = True

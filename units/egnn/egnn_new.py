@@ -327,15 +327,15 @@ def unsorted_segment_sum(data, segment_ids, num_segments, normalization_factor, 
 
 def compute_edge_angles(x, full_edges, act_edges):
     """
-    计算边之间的夹角平均值，并将结果映射到全边集
+    Compute the average angle between edges and map the results to the full edge set
     
     Args:
-        x: 原子坐标, shape (node_num, 3)
-        full_edges: 全边集, shape (2, edge_num)
-        act_edges: 实际存在的边, shape (2, act_edge_num)
+        x: atomic coordinates, shape (node_num, 3)
+        full_edges: full edge set, shape (2, edge_num)
+        act_edges: actual existing edges, shape (2, act_edge_num)
         
     Returns:
-        angles: 每条边的夹角平均值, shape (edge_num, 1)
+        angles: average angle for each edge, shape (edge_num, 1)
     """
     device = x.device
     node_num = x.shape[0]
