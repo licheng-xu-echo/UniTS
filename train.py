@@ -5,7 +5,7 @@ from torch.utils.data.distributed import DistributedSampler
 from units.data import MultiDataset,get_idx_split,get_fnidx_split,MultiDatasetV2,MultiDataset1x
 from copy import deepcopy
 from torch_geometric.data import DataLoader
-from units.utils import get_optim,Queue,EMA,setup_logger,str_to_bool,str_to_bool,Args
+from units.utils import get_optim,Queue,EMA,setup_logger,str_to_bool,Args
 from units.en_diffusion import EnVariationalDiffusion
 from units.egnn.model import EGNN_dynamics_DiffMM
 from units.hiegnn.model import HiEGNN_dynamics_DiffMM

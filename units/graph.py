@@ -3,19 +3,6 @@ from rdkit.Chem import rdmolops
 from .utils import create_reaction_with_atom_mapping
 from qcbot.utils import symbol_pos_to_xyz_file,MolFormatConversion
 
-def get_split_mol_idx(mol, pairs_to_remove):
-    rw = Chem.RWMol(mol)
-
-    for a, b in pairs_to_remove:
-        a = int(a)
-        b = int(b)
-        if rw.GetBondBetweenAtoms(a, b):
-            rw.RemoveBond(a, b)
-    mol = rw.GetMol()
-    split_mol_idx_lst = rdmolops.GetMolFrags(mol, asMols=False)
-    split_mol_lst = rdmolops.GetMolFrags(mol, asMols=True, sanitizeFrags=False)
-    return mol,split_mol_idx_lst,split_mol_lst
-
 def identify_reacting_atoms_by_vib_graph(atoms,coord,modes,ratio=0.5):
     coord_backward = coord - modes[0] * ratio
     coord_forward = coord + modes[0] * ratio

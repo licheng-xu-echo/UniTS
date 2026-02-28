@@ -1,7 +1,4 @@
 import torch
-def assert_correctly_masked(variable, node_mask):
-    assert (variable * (1 - node_mask)).abs().sum().item() < 1e-8
-
 def compute_loss_and_nll(args, generative_model, data):
     #bs, n_nodes, n_dims = x.size()
 

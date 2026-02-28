@@ -1,5 +1,5 @@
 from .utils import assert_mean_zero_with_mask,sample_center_gravity_zero_gaussian_with_mask,\
-split_and_padding,remove_mean_with_mask,random_transform,gather_selected_nodes_and_compute_mean,compute_angles
+split_and_padding,remove_mean_with_mask,random_transform,gather_selected_nodes_and_compute_mean,compute_angles,sum_except_batch
 import logging
 from torch.nn import functional as F
 import torch,math
@@ -17,9 +17,6 @@ def expm1(x: torch.Tensor) -> torch.Tensor:
 
 def softplus(x: torch.Tensor) -> torch.Tensor:
     return F.softplus(x)
-
-def sum_except_batch(x):
-    return x.reshape(x.size(0), -1).sum(-1)
 
 def clip_noise_schedule(alphas2, clip_value=0.001):
     """

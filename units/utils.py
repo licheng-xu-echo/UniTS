@@ -17,14 +17,6 @@ class Args:
     def __init__(self,**entries):
         self.__dict__.update(entries)
 
-def str_to_bool(value):
-    if value.lower() in {"true", "yes", "1"}:
-        return True
-    elif value.lower() in {"false", "no", "0"}:
-        return False
-    else:
-        raise argparse.ArgumentTypeError("must be True/False")
-
 def find_subgraphs(atoms, bonds):
 
     G = nx.Graph()
@@ -180,29 +172,6 @@ def sample_gaussian_with_mask(size, device, node_mask):
     x_masked = x * node_mask
     return x_masked
 
-def split_and_padding(coords, batch, size=3):
-
-    num_molecules = torch.max(batch) + 1
-
-
-    atom_counts = torch.bincount(batch)
-
-
-    max_atoms = torch.max(atom_counts)
-
-
-    padded_coords = torch.zeros((num_molecules, max_atoms, size))
-    mask = torch.zeros((num_molecules, max_atoms), dtype=torch.bool)
-
-    for mol_id in range(num_molecules):
-
-        mol_coords = coords[batch == mol_id]
-
-        padded_coords[mol_id, :len(mol_coords)] = mol_coords
-        
-        mask[mol_id, :len(mol_coords)] = True
-    return padded_coords, mask
-
 '''
 def sample_center_gravity_zero_gaussian_with_mask(size, device, node_mask, remove_mean=True):
     assert len(size) == 3
@@ -218,11 +187,6 @@ def sample_center_gravity_zero_gaussian_with_mask(size, device, node_mask, remov
         x_projected = x_masked
     return x_projected
 '''
-
-def sample_gaussian_with_mask(size, device, node_mask):
-    x = torch.randn(size, device=device)
-    x_masked = x * node_mask
-    return x_masked
 
 def generate_index_tensor(tensor):
     """
@@ -569,14 +533,6 @@ def compute_angles(vec1, vec2):
     cos_angles = torch.sum(vec1_norm * vec2_norm, dim=1)
     cos_angles = torch.clamp(cos_angles, -0.999999, 0.999999)
     return torch.acos(cos_angles)
-
-def str_to_bool(value):
-    if value.lower() in {"true", "yes", "1"}:
-        return True
-    elif value.lower() in {"false", "no", "0"}:
-        return False
-    else:
-        raise argparse.ArgumentTypeError("must be True/False")
 
 def atoms_to_formula(atoms_list):
     atom_count = Counter(atoms_list)
