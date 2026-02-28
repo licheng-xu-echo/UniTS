@@ -20,14 +20,13 @@ Here, we display some of the generation TS trajatories (from Formula-OOS test se
 ```
 conda create -n units python=3.11
 conda activate units
-pip install -r requirements.txt -f https://data.pyg.org/whl/torch-2.4.0+cu124.html --extra-index-url https://download.pytorch.org/whl/cu124
 git clone https://github.com/licheng-xu-echo/QCBot.git
 cd QCBot
 pip install .
 cd ..
 git clone https://github.com/licheng-xu-echo/UniTS.git
 cd UniTS
-pip install .
+pip install . -f https://data.pyg.org/whl/torch-2.4.0+cu124.html --extra-index-url https://download.pytorch.org/whl/cu124
 ```
 **Note**: All codes were tested under Ubuntu 22.04.2 LTS
 
