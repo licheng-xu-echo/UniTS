@@ -4,6 +4,7 @@ import logging
 from torch.nn import functional as F
 import torch,math
 import numpy as np
+from typing import Callable, Optional
 from .encoder.graph_encoder import GraphEncoder
 from tqdm import tqdm
 
@@ -265,6 +266,7 @@ class EnVariationalDiffusion(torch.nn.Module):
             rc_angle_weight=2.0,          # loss weight for bond angle
             use_init_coords=False,
             fix_step_from_init=500,
+            graph_encoder_factory: Optional[Callable[..., torch.nn.Module]] = None,
             ):
         super().__init__()
 
@@ -331,23 +333,45 @@ class EnVariationalDiffusion(torch.nn.Module):
         self.norm_values = norm_values
         self.norm_biases = norm_biases
         self.register_buffer('buffer', torch.zeros(1))
+        self.graph_encoder_factory = graph_encoder_factory or self._default_graph_encoder_factory
 
         if noise_schedule != 'learned':
             self.check_issues_norm_values()
 
         if self.use_context:
-            self.mol_encoder = GraphEncoder(gnum_layer=enc_num_layers, emb_dim=context_node_nf,
-                                            gnn_aggr=enc_gnn_aggr, bond_feat_red=enc_bond_feat_red,
-                                            gnn_type=mol_encoder_type, JK=enc_JK, drop_ratio=enc_drop_ratio, node_readout=enc_node_readout)
+            self.mol_encoder = self.graph_encoder_factory(
+                role="molecule",
+                gnum_layer=enc_num_layers,
+                emb_dim=context_node_nf,
+                gnn_aggr=enc_gnn_aggr,
+                bond_feat_red=enc_bond_feat_red,
+                gnn_type=mol_encoder_type,
+                JK=enc_JK,
+                drop_ratio=enc_drop_ratio,
+                node_readout=enc_node_readout,
+            )
         if self.use_rct_cent:
-            self.rct_cent_encoder = GraphEncoder(gnum_layer=enc_num_layers, emb_dim=rct_cent_node_nf,
-                                            gnn_aggr=enc_gnn_aggr, bond_feat_red=enc_bond_feat_red,
-                                            gnn_type=rct_cent_encoder_type, JK=enc_JK, drop_ratio=enc_drop_ratio, node_readout=rct_cent_readout)
+            self.rct_cent_encoder = self.graph_encoder_factory(
+                role="rct_center",
+                gnum_layer=enc_num_layers,
+                emb_dim=rct_cent_node_nf,
+                gnn_aggr=enc_gnn_aggr,
+                bond_feat_red=enc_bond_feat_red,
+                gnn_type=rct_cent_encoder_type,
+                JK=enc_JK,
+                drop_ratio=enc_drop_ratio,
+                node_readout=rct_cent_readout,
+            )
 
         self.context_dim = context_node_nf
         self.context_node_nf = context_node_nf
         self.rct_cent_context_dim = rct_cent_node_nf
         self.rct_cent_node_nf = rct_cent_node_nf
+
+    @staticmethod
+    def _default_graph_encoder_factory(*, role: str, **kwargs):
+        _ = role
+        return GraphEncoder(**kwargs)
     
     def check_issues_norm_values(self, num_stdevs=8):
         zeros = torch.zeros((1, 1))
