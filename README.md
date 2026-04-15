@@ -31,7 +31,23 @@ pip install . -f https://data.pyg.org/whl/torch-2.4.0+cu124.html --extra-index-u
 **Note**: All codes were tested under Ubuntu 22.04.2 LTS
 
 ### Model weights and dataset
-During the peer-review period, the model weights and the UniTS dataset are available upon request. Please contact us via [email](mailto:xulicheng@sais.org.cn) if you are interested.
+All model weights and preprocessed datasets are available via our [figshare](https://figshare.com/s/31bd730a3834435100dc) repository. Please put these files in `model_path` and `dataset` folders, like the following structure:
+```
+UniTS
+|── units
+├── model_path
+│   ├── da_egnn/
+|   ├── da_hiegnn/
+|   ├── transition1x_egnn/
+|   ├── transition1x_hiegnn/
+│   ├── units_egnn/
+|   ├── units_hiegnn/
+|   └── ...
+|── dataset
+│   ├── UniTS_Lib.npy
+│   └── ...
+|── ...
+```
 
 ## ⚛️ Model Training and Testing
 ```bash
