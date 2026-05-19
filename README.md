@@ -17,6 +17,8 @@ Here, we display some of the generation TS trajatories (from Formula-OOS test se
 
 ## 🚀 Quick Start
 ### Installation
+Current installation commands are tested for `PyTorch 2.4.0 + CUDA 12.4 + PyG cu124` only. You may switch versions if needed, but compatibility is not guaranteed.
+
 ```
 conda create -n units python=3.11
 conda activate units
@@ -26,6 +28,10 @@ pip install .
 cd ..
 git clone https://github.com/licheng-xu-echo/UniTS.git
 cd UniTS
+unzip MolOP-main.zip
+cd MolOP-main
+pip install -e .
+cd ..
 pip install . -f https://data.pyg.org/whl/torch-2.4.0+cu124.html --extra-index-url https://download.pytorch.org/whl/cu124
 ```
 **Note**: All codes were tested under Ubuntu 22.04.2 LTS
@@ -68,6 +74,30 @@ python -u traj_sampling.py --model_root ./model_path --model_tag units_hiegnn --
 python -u calc_rmsd.py --result_path ./sample_traj --result_tag traj-sample-repeat-10-units_hiegnn-xxxx-xx-xx-xx-xx-xx
 ```
 
+## 🛠️ Basic Usage
+
+```bash
+# From SMILES to TS initial guess
+python units/infer_smiles.py \
+  --smiles '[H]C([H])([H])OCOC([H])([H])[H].[H]C1C(C([H])=O)C([H])([H])C([H])([H])C([H])([H])C1([H])[H]' \
+  --reactive_atom_idx 5,12 \
+  --charge 0 \
+  --multi 1 \
+  --model_path ./model_path/units_hiegnn \
+  --num_samples 10 \
+  --output_dir ./ts_initial_guess
+
+# Multi-SMILES
+python units/infer_smiles.py \
+  --smiles 'SMILES1' 'SMILES2' \
+  --reactive_atom_idx site11,site12,site13 site21,site22  \
+  --charge chrg1 chrg2 \
+  --multi multi1 multi2 \
+  --model_path ./model_path/units_hiegnn \
+  --num_samples 10 \
+  --output_dir ./ts_initial_guess
+```
+Some usefull notebooks can be found in [notebook](https://github.com/licheng-xu-echo/UniTS/tree/main/notebook) folder.
 ## 📚 Citation
 If you find this code useful in your research, please consider citing our preprint before the official publication: 
 

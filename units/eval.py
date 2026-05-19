@@ -238,6 +238,34 @@ def sc2pmg(species,coords):
     )
     return mol
 
+def align_mol(mol1, mol2, threshold=0.5, same_order=False, timeout=None):
+    _, count = np.unique(mol1.atomic_numbers, return_counts=True)
+    if same_order:
+        bfm = KabschMatcher(mol1)
+        aligned_mol, rmsd = bfm.fit(mol2)   
+        return rmsd, aligned_mol
+
+    total_permutations = 1
+    for c in count:
+        total_permutations *= np.math.factorial(c)
+
+    if total_permutations < 1e4:
+        bfm = BruteForceOrderMatcher(mol1)
+        aligned_mol, rmsd = bfm.fit(mol2)
+        return rmsd, aligned_mol
+    else:
+        bfm = GeneticOrderMatcher(mol1, threshold=threshold, timeout=timeout)
+        matches = bfm.fit(mol2)   # matches: list of (aligned_mol, rmsd)
+        if matches:
+            
+            best_mol, best_rmsd = min(matches, key=lambda x: x[1])
+            return best_rmsd, best_mol
+        else:
+            
+            bfm = HungarianOrderMatcher(mol1)
+            aligned_mol, rmsd = bfm.fit(mol2)
+            return rmsd, aligned_mol
+
 def rmsd_core(mol1, mol2, threshold=0.5, same_order=False, timeout=None):
     _, count = np.unique(mol1.atomic_numbers, return_counts=True)
     if same_order:

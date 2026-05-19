@@ -9,8 +9,11 @@ sample_traj/
 notebook/geom_files/
 notebook/*.sdf
 notebook/*.xyz
+notebook/**/*.xyz
 model_path/
 rmsd_calc/
+MolOP-main/
+ts_initial_guess/
 *.egg-info
 *.pyc
 *.tar.gz

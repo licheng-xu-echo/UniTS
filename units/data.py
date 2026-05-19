@@ -1,4 +1,4 @@
-import torch,warnings,glob,os,itertools,logging
+import torch,warnings,glob,os,itertools,logging,shutil
 import numpy as np
 from scipy.spatial import KDTree
 from torch_geometric.data import InMemoryDataset,Data
@@ -1313,3 +1313,58 @@ def load_dataset_from_args(args,only_test=True,shuffle=True):
         return test_dataset, test_dataset_to_use_graph
     else:
         return dataset, dataset_to_use_graph
+    
+def gen_dataset_from_smiles(smiles_react_atom_index_map, smiles_react_atom_index_lst=None, args=None, charge=0, multi=1, tag='temp', root='.'):
+    # 0 2
+    ts_dataset = []
+    if smiles_react_atom_index_map is not None:
+        smiles_lst = list(smiles_react_atom_index_map.keys())
+        mol_lst = []
+        for smiles in smiles_lst:
+            mol = Chem.MolFromSmiles(smiles,sanitize=False)
+            mol_lst.append(mol)
+            
+        
+        for smi,mol in zip(smiles_lst,mol_lst):
+            mol.UpdatePropertyCache(strict=False)
+            atoms = [atom.GetSymbol() for atom in mol.GetAtoms()]
+            reacting_atoms = smiles_react_atom_index_map[smi]
+            x_edge_index_attr = list(mol2graphinfo(mol,chrg=charge,multi=multi))
+            existed_edge_index = deepcopy(x_edge_index_attr[1])
+            existed_edge_attr = deepcopy(x_edge_index_attr[2])
+            # new_edge_index,new_edge_attr = add_reactat_edge_info(existed_edge_index,existed_edge_attr,reacting_atoms)
+            new_edge_index,new_edge_attr =  torch.empty([2,0]),torch.empty([0,5])
+            x_edge_index_attr.append(new_edge_index)
+            x_edge_index_attr.append(new_edge_attr)
+            blk_idxs = Chem.GetMolFrags(mol)
+            ts_dataset.append([atoms,np.random.rand(len(atoms),3),x_edge_index_attr,mol,blk_idxs,reacting_atoms])
+    elif smiles_react_atom_index_lst is not None:
+        for smiles, reacting_atoms in smiles_react_atom_index_lst:
+            mol = Chem.MolFromSmiles(smiles,sanitize=False)
+            mol.UpdatePropertyCache(strict=False)
+            atoms = [atom.GetSymbol() for atom in mol.GetAtoms()]
+            x_edge_index_attr = list(mol2graphinfo(mol,chrg=charge,multi=multi))
+            existed_edge_index = deepcopy(x_edge_index_attr[1])
+            existed_edge_attr = deepcopy(x_edge_index_attr[2])
+            # new_edge_index,new_edge_attr = add_reactat_edge_info(existed_edge_index,existed_edge_attr,reacting_atoms)
+            new_edge_index,new_edge_attr =  torch.empty([2,0]),torch.empty([0,5])
+            x_edge_index_attr.append(new_edge_index)
+            x_edge_index_attr.append(new_edge_attr)
+            blk_idxs = Chem.GetMolFrags(mol)
+            ts_dataset.append([atoms,np.random.rand(len(atoms),3),x_edge_index_attr,mol,blk_idxs,reacting_atoms])
+    else:
+        raise ValueError("smiles_react_atom_index_lst or reacting_atoms must be provided")
+    os.makedirs(root, exist_ok=True)
+    np.save(os.path.join(root, f"{tag}_ts_0.npy"), np.array(ts_dataset, dtype=object))
+    processed_dir = os.path.join(root, "processed")
+    if os.path.exists(processed_dir):
+        shutil.rmtree(processed_dir)
+    if not hasattr(args,'dataset_type') or args.dataset_type == 1:
+        dataset = MultiDataset(root=root, name_regrex=f"{tag}_ts_0.npy")
+    elif args.dataset_type == 2:
+        dataset = MultiDatasetV2(root=root, name_regrex=f"{tag}_ts_0.npy",link_rc=args.link_rc,
+                                    data_enhance=args.data_enhance if hasattr(args,'data_enhance') else False)
+    elif args.dataset_type == 3:
+        dataset = MultiDataset1x(root=root, name_regrex=f"{tag}_ts_0.npy",link_rc=args.link_rc,
+                                    iptgraph_type=args.iptgraph_type)
+    return dataset

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "units"
-version = "0.16.0"
+version = "1.0.0"
 description = "A universal diffusion model for transition state geometry generation"
 readme = "README.md"
 license = { text = "MIT License" }
@@ -37,6 +37,7 @@ dependencies = [
   "torchdiffeq==0.2.5",
   "torchelastic==0.2.2",
   "torchvision==0.19.0",
+  "tqdm==4.66.4",
   "imageio==2.37.2"
 ]
 authors = [
