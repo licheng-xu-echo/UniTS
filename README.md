@@ -97,7 +97,7 @@ python units/infer_smiles.py \
   --num_samples 10 \
   --output_dir ./ts_initial_guess
 ```
-Some usefull notebooks can be found in [notebook](https://github.com/licheng-xu-echo/UniTS/tree/main/notebook) folder.
+Some usefull notebooks can be found in [notebook](https://github.com/licheng-xu-echo/UniTS/tree/main/notebook) folder. IRC results can be found in [irc_of_formula_oos_test_set](https://github.com/licheng-xu-echo/UniTS/tree/main/results/irc_of_formula_oos_test_set) folder.
 ## 📚 Citation
 If you find this code useful in your research, please consider citing our preprint before the official publication: 
 

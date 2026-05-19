@@ -17,5 +17,4 @@ MolOP-main/
 ts_initial_guess/
 *.egg-info
 *.pyc
-*.tar.gz
 *.pt
