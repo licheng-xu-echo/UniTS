@@ -9,7 +9,8 @@ sample_traj/
 notebook/geom_files/
 notebook/*.sdf
 notebook/*.xyz
-notebook/**/*.xyz
+notebook/exported_xyz/**/*.xyz
+
 model_path/
 rmsd_calc/
 MolOP-main/
