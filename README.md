@@ -1,7 +1,7 @@
 # UniTS
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-orange)](https://ubuntu.com/) [![Python 3.11](https://img.shields.io/badge/python-3.11-blue)](https://www.python.org/) [![PyTorch 2.4.0+cu124](https://img.shields.io/badge/PyTorch-2.4.0%2Bcu124-red)](https://pytorch.org/) [![PyG 2.6.1](https://img.shields.io/badge/torch__geometric-2.6.1-green)](https://pytorch-geometric.readthedocs.io/) [![RDKit](https://img.shields.io/badge/Chemoinformatics-RDKit-blueviolet)](https://www.rdkit.org/) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-The corresponding paper is under review. Preprint version is available at [ChemRxiv](https://doi.org/10.26434/chemrxiv.10001667/v1).
+The corresponding paper is under review. Preprint version is available at [ChemRxiv](https://chemrxiv.org/doi/full/10.26434/chemrxiv.10001667/v2).
 
 ## 📌 Key Features
 - Comprehensive Pipeline:​ UniTS combines the UniTS-Lib​ dataset with the UniTS-Gen​ model, offering a complete workflow from TS data to TS generation.
@@ -101,7 +101,7 @@ Some usefull notebooks can be found in [notebook](https://github.com/licheng-xu-
 ## 📚 Citation
 If you find this code useful in your research, please consider citing our preprint before the official publication: 
 
-Li-Cheng Xu, Junyi An, Weiqi Liu, et al. A unified framework for automated transition state generation to accelerate mechanistic exploration in organic synthesis. *ChemRxiv* **2026**, DOI: 10.26434/chemrxiv.10001667/v1.
+Li-Cheng Xu, Junyi An, Weiqi Liu, et al. A unified framework for automated transition state generation to accelerate mechanistic exploration in organic synthesis. *ChemRxiv* **2026**, DOI: 10.26434/chemrxiv.10001667/v2.
 
 ```
 @article{xu_2026_units,
@@ -109,10 +109,10 @@ Li-Cheng Xu, Junyi An, Weiqi Liu, et al. A unified framework for automated trans
     title = {A unified framework for automated transition state generation to accelerate mechanistic exploration in organic synthesis},
     journal = {ChemRxiv},
     volume = {2026},
-    number = {0128},
+    number = {0521},
     pages = {},
     year = {2026},
-    doi = {10.26434/chemrxiv.10001667/v1},
-    URL = {https://chemrxiv.org/doi/abs/10.26434/chemrxiv.10001667/v1},
-    eprint = {https://chemrxiv.org/doi/pdf/10.26434/chemrxiv.10001667/v1}}
+    doi = {10.26434/chemrxiv.10001667/v2},
+    URL = {https://chemrxiv.org/doi/abs/10.26434/chemrxiv.10001667/v2},
+    eprint = {https://chemrxiv.org/doi/pdf/10.26434/chemrxiv.10001667/v2}}
 ```
