@@ -4,7 +4,7 @@ from pathlib import Path
 
 import torch
 from molop.config import molopconfig
-from qcbot.utils import multi_symbol_pos_to_xyz_file, symbol_pos_to_xyz_file
+from qcbot.utils import MolFormatConversion, multi_symbol_pos_to_xyz_file, symbol_pos_to_xyz_file
 from rdkit import Chem
 from torch_geometric.data import DataLoader
 
@@ -110,6 +110,12 @@ def build_parser():
         help="Whether to save all generated guesses into one multi-frame xyz file.",
     )
     parser.add_argument(
+        "--save_full_trajectory",
+        type=str_to_bool,
+        default=False,
+        help="Whether to save the full generation trajectory for each sample as xyz and sdf.",
+    )
+    parser.add_argument(
         "--fix_noise",
         type=str_to_bool,
         default=False,
@@ -148,6 +154,15 @@ def sample_to_symbols_and_coords(mol_atoms_row, node_mask_row, pred_pos_row):
     symbols = [pt.GetElementSymbol(int(atom_number)) for atom_number in atom_numbers]
     coords = pred_pos_row[node_mask.cpu().numpy()]
     return symbols, coords
+
+
+def extract_trajectory_frames(symbols, node_mask_row, x_traj, batch_idx, title_prefix):
+    valid_mask = node_mask_row.squeeze(-1).bool().cpu().numpy()
+    traj_frames = []
+    for frame_idx, frame in enumerate(x_traj):
+        coords = frame[batch_idx][valid_mask]
+        traj_frames.append((symbols, coords, f"{title_prefix}_frame_{frame_idx:04d}"))
+    return traj_frames
 
 
 def normalize_per_reaction_arg(values, num_reactions, arg_name):
@@ -237,6 +252,35 @@ def main():
                             (symbols, coords, f"reaction_{reaction_idx:03d}_{cli_args.output_prefix}_{sample_idx}")
                         )
                         print(f"[INFO] saved {xyz_path}")
+
+                        if cli_args.save_full_trajectory:
+                            traj_title_prefix = (
+                                f"reaction_{reaction_idx:03d}_{cli_args.output_prefix}_{sample_idx}"
+                            )
+                            traj_frames = extract_trajectory_frames(
+                                symbols,
+                                node_mask[batch_idx],
+                                x_traj,
+                                batch_idx,
+                                traj_title_prefix,
+                            )
+                            traj_xyz_path = (
+                                reaction_output_dir
+                                / f"{cli_args.output_prefix}_{sample_idx}_traj.xyz"
+                            )
+                            traj_sdf_path = (
+                                reaction_output_dir
+                                / f"{cli_args.output_prefix}_{sample_idx}_traj.sdf"
+                            )
+                            multi_symbol_pos_to_xyz_file(traj_frames, str(traj_xyz_path))
+                            MolFormatConversion(
+                                str(traj_xyz_path),
+                                str(traj_sdf_path),
+                                input_format="xyz",
+                                output_format="sdf",
+                            )
+                            print(f"[INFO] saved {traj_xyz_path}")
+                            print(f"[INFO] saved {traj_sdf_path}")
                         sample_idx += 1
 
             if cli_args.save_combined_xyz:

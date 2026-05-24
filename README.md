@@ -87,6 +87,17 @@ python units/infer_smiles.py \
   --num_samples 10 \
   --output_dir ./ts_initial_guess
 
+# Save whole generation trajactory
+python units/infer_smiles.py \
+  --smiles '[H]C([H])([H])OCOC([H])([H])[H].[H]C1C(C([H])=O)C([H])([H])C([H])([H])C([H])([H])C1([H])[H]' \
+  --reactive_atom_idx 5,12 \
+  --charge 0 \
+  --multi 1 \
+  --model_path ./model_path/units_hiegnn \
+  --num_samples 10 \
+  --output_dir ./ts_initial_guess \
+  --save_full_trajectory True
+
 # Multi-SMILES
 python units/infer_smiles.py \
   --smiles 'SMILES1' 'SMILES2' \
