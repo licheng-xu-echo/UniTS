@@ -37,6 +37,18 @@ pip install . -f https://data.pyg.org/whl/torch-2.4.0+cu124.html --extra-index-u
 **Note**: All codes were tested under Ubuntu 22.04.2 LTS
 
 ### Model weights and dataset
+
+Option 1: download from modelscope (recommended)
+```bash
+pip install modelscope
+# model checkpoints
+modelscope download --model 'XuLiCheng2025/UniTS-Gen-v1' --include 'model_path/*' --local_dir '.'
+# dataset
+modelscope download --model 'XuLiCheng2025/UniTS-Gen-v1' --include 'dataset/*' --local_dir '.'
+```
+
+Option 2: download from figshare
+
 All model weights and preprocessed datasets are available via our [figshare](https://figshare.com/s/31bd730a3834435100dc) repository. Please put these files in `model_path` and `dataset` folders, like the following structure:
 ```
 UniTS
