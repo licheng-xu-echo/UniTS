@@ -10,6 +10,7 @@ from torch_geometric.data import DataLoader
 
 from units.data import gen_dataset_from_smiles
 from units.generate import load_model
+from units.utils import set_global_seed, seed_worker
 pt = Chem.GetPeriodicTable()
 
 
@@ -90,6 +91,12 @@ def build_parser():
         type=int,
         default=16,
         help="Inference batch size.",
+    )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=None,
+        help="Global random seed for reproducible inference. By default no fixed seed is set.",
     )
     parser.add_argument(
         "--output_dir",
@@ -184,7 +191,12 @@ def main():
         raise ValueError("num_samples must be positive")
     if cli_args.batch_size <= 0:
         raise ValueError("batch_size must be positive")
-
+    if cli_args.seed is not None:
+        if cli_args.seed < 0 or cli_args.seed > 2**32 - 1:
+            raise ValueError("seed must be in [0, 2**32 - 1]")
+        set_global_seed(cli_args.seed)
+        print(f"[INFO] random seed = {cli_args.seed}")
+        
     molopconfig.quiet()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -226,6 +238,12 @@ def main():
                     batch_size=min(cli_args.batch_size, len(dataset)),
                     shuffle=False,
                     num_workers=args.num_workers,
+                    worker_init_fn=seed_worker if cli_args.seed is not None else None,
+                    generator=(
+                        torch.Generator().manual_seed(cli_args.seed)
+                        if cli_args.seed is not None
+                        else None
+                    ),
                 )
 
                 sample_idx = 0

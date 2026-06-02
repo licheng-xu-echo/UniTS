@@ -1,4 +1,4 @@
-import torch,os,logging,sys,argparse
+import torch,os,logging,sys,argparse,random
 from .optimizer import Muon
 from datetime import datetime
 import numpy as np
@@ -552,3 +552,22 @@ def clear_atom_map(mol):
         if atom.HasProp('molAtomMapNumber'):
             atom.ClearProp('molAtomMapNumber')
     return mol
+
+def set_global_seed(seed):
+    os.environ["PYTHONHASHSEED"] = str(seed)
+    os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":4096:8")
+
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+
+    torch.backends.cudnn.benchmark = False
+    torch.backends.cudnn.deterministic = True
+    torch.use_deterministic_algorithms(True)
+
+
+def seed_worker(worker_id):
+    worker_seed = torch.initial_seed() % 2**32
+    random.seed(worker_seed)
+    np.random.seed(worker_seed)
