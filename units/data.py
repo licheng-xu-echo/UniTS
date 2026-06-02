@@ -290,7 +290,7 @@ class _Dataset(InMemoryDataset):
         self.multi_file = multi_file
         
         super().__init__(root, transform, pre_transform)
-        self.data, self.slices = torch.load(self.processed_paths[0])
+        self.data, self.slices = torch.load(self.processed_paths[0],weights_only=False)
 
     @property
     def raw_file_names(self):
@@ -414,7 +414,7 @@ class MultiDataset1x(InMemoryDataset):
         self.slices_lst = []
         self.data_num_lst = [0]
         for processed_path in self.processed_paths:
-            data, slices = torch.load(processed_path)
+            data, slices = torch.load(processed_path,weights_only=False)
             self.data_lst.append(data)
             self.slices_lst.append(slices)
             self.data_num_lst.append(self.data_num_lst[-1]+len(slices['x'])-1)
@@ -566,7 +566,7 @@ class MultiDatasetV2(InMemoryDataset):
         self.slices_lst = []
         self.data_num_lst = [0]
         for processed_path in self.processed_paths:
-            data, slices = torch.load(processed_path)
+            data, slices = torch.load(processed_path,weights_only=False)
             self.data_lst.append(data)
             self.slices_lst.append(slices)
             self.data_num_lst.append(self.data_num_lst[-1]+len(slices['x'])-1)
@@ -719,7 +719,7 @@ class MultiDataset(InMemoryDataset):
         self.slices_lst = []
         self.data_num_lst = [0]
         for processed_path in self.processed_paths:
-            data, slices = torch.load(processed_path)
+            data, slices = torch.load(processed_path,weights_only=False)
             self.data_lst.append(data)
             self.slices_lst.append(slices)
             self.data_num_lst.append(self.data_num_lst[-1]+len(slices['x'])-1)
