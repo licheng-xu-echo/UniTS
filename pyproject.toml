@@ -55,6 +55,9 @@ classifiers = [
 Homepage = "https://github.com/licheng-xu-echo/UniTS"
 Repository = "https://github.com/licheng-xu-echo/UniTS"
 
+[project.scripts]
+units-infer-smiles = "units.infer_smiles:main"
+
 [tool.setuptools.packages.find]
 include = ["units*"]
 
