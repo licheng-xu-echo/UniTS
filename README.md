@@ -130,16 +130,6 @@ units-infer-smiles \
   --model_type units_hiegnn \
   --num_samples 10 \
   --output_dir ./ts_initial_guess
-
-# Use [3+2]-cycloaddition model
-units-infer-smiles \
---smiles '[H]C1([H])C(F)(F)C#C[C@@](Cl)(Br)C([H])([H])C([H])([H])C1([H])[H].[H]N(C(=O)/C(C(=O)OC([H])([H])[H])=[N+](C(/C(=O)C([H])([H])[H])=C(\[O-])N([H])C([H])([H])[H])\C([H])([H])[H])C([H])([H])[H]' \
---reactive_atom_idx 24,6,7,33 \
---charge 0 \
---multi 1 \
---model_type da_hiegnn \
---num_samples 10 \
---output_dir ./ts_initial_guess
 ```
 Some usefull notebooks can be found in [notebook](https://github.com/licheng-xu-echo/UniTS/tree/main/notebook) folder. IRC results can be found in [irc_of_formula_oos_test_set](https://github.com/licheng-xu-echo/UniTS/tree/main/results/irc_of_formula_oos_test_set) folder.
 ## 📚 Citation
