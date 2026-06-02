@@ -249,6 +249,7 @@ def main():
                     multi=multi,
                     tag=f"infer_{reaction_idx:03d}",
                     root=temp_root,
+                    ts_type=cli_args.model_type.split("_")[0],
                 )
                 dataloader = DataLoader(
                     dataset,

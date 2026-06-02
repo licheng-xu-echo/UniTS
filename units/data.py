@@ -1314,7 +1314,7 @@ def load_dataset_from_args(args,only_test=True,shuffle=True):
     else:
         return dataset, dataset_to_use_graph
     
-def gen_dataset_from_smiles(smiles_react_atom_index_map, smiles_react_atom_index_lst=None, args=None, charge=0, multi=1, tag='temp', root='.'):
+def gen_dataset_from_smiles(smiles_react_atom_index_map, smiles_react_atom_index_lst=None, args=None, charge=0, multi=1, tag='temp', root='.', ts_type="units"):
     # 0 2
     ts_dataset = []
     if smiles_react_atom_index_map is not None:
@@ -1333,7 +1333,11 @@ def gen_dataset_from_smiles(smiles_react_atom_index_map, smiles_react_atom_index
             existed_edge_index = deepcopy(x_edge_index_attr[1])
             existed_edge_attr = deepcopy(x_edge_index_attr[2])
             # new_edge_index,new_edge_attr = add_reactat_edge_info(existed_edge_index,existed_edge_attr,reacting_atoms)
-            new_edge_index,new_edge_attr =  torch.empty([2,0]),torch.empty([0,5])
+            if ts_type == "units":
+                new_edge_index,new_edge_attr =  torch.empty([2,0]),torch.empty([0,5])
+            elif ts_type == "da":
+                new_edge_index,new_edge_attr = add_reactat_edge_info(existed_edge_index,existed_edge_attr,reacting_atoms)
+            assert ts_type in ["units","da"], "ts_type should be units or da, transition1x is not supported in CLI"
             x_edge_index_attr.append(new_edge_index)
             x_edge_index_attr.append(new_edge_attr)
             blk_idxs = Chem.GetMolFrags(mol)
@@ -1347,7 +1351,11 @@ def gen_dataset_from_smiles(smiles_react_atom_index_map, smiles_react_atom_index
             existed_edge_index = deepcopy(x_edge_index_attr[1])
             existed_edge_attr = deepcopy(x_edge_index_attr[2])
             # new_edge_index,new_edge_attr = add_reactat_edge_info(existed_edge_index,existed_edge_attr,reacting_atoms)
-            new_edge_index,new_edge_attr =  torch.empty([2,0]),torch.empty([0,5])
+            if ts_type == "units":
+                new_edge_index,new_edge_attr =  torch.empty([2,0]),torch.empty([0,5])
+            elif ts_type == "da":
+                new_edge_index,new_edge_attr = add_reactat_edge_info(existed_edge_index,existed_edge_attr,reacting_atoms)
+            assert ts_type in ["units","da"], "ts_type should be units or da"
             x_edge_index_attr.append(new_edge_index)
             x_edge_index_attr.append(new_edge_attr)
             blk_idxs = Chem.GetMolFrags(mol)
