@@ -12,6 +12,7 @@ from units.data import gen_dataset_from_smiles
 from units.generate import load_model
 from units.utils import set_global_seed, seed_worker
 pt = Chem.GetPeriodicTable()
+MODEL_ROOT = Path(__file__).resolve().parent / "model_path"
 
 
 def parse_reactive_atom_idx(value):
@@ -69,10 +70,10 @@ def build_parser():
         help="One or more spin multiplicities. A single value will be broadcast.",
     )
     parser.add_argument(
-        "--model_path",
+        "--model_type",
         type=str,
-        default="./model_path/units_hiegnn",
-        help="Path to the trained model directory.",
+        default="units_hiegnn",
+        help="Bundled model ID under units/model_path, e.g. units_hiegnn.",
     )
     parser.add_argument(
         "--ckpt_file",
@@ -183,6 +184,19 @@ def normalize_per_reaction_arg(values, num_reactions, arg_name):
     return values
 
 
+def resolve_model_path(model_type):
+    model_path = MODEL_ROOT / model_type
+    if model_path.is_dir():
+        return model_path
+    available_models = sorted(
+        path.name for path in MODEL_ROOT.iterdir() if path.is_dir()
+    )
+    raise FileNotFoundError(
+        f"Unknown model_type '{model_type}'. Available model types: "
+        f"{', '.join(available_models)}"
+    )
+
+
 def main():
     parser = build_parser()
     cli_args = parser.parse_args()
@@ -200,7 +214,10 @@ def main():
     molopconfig.quiet()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    args, model = load_model(cli_args.model_path, ckpt_file=cli_args.ckpt_file, device=device)
+    model_path = resolve_model_path(cli_args.model_type)
+    print(f"[INFO] model_type = {cli_args.model_type}")
+    print(f"[INFO] model_path = {model_path}")
+    args, model = load_model(str(model_path), ckpt_file=cli_args.ckpt_file, device=device)
 
     num_reactions = len(cli_args.smiles)
     reactive_atom_idx_lst = normalize_per_reaction_arg(

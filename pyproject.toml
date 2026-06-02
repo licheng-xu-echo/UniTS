@@ -62,4 +62,4 @@ units-infer-smiles = "units.infer_smiles:main"
 include = ["units*"]
 
 [tool.setuptools.package-data]
-"*" = ["*.csv", "*.pt"]
+"*" = ["*.csv", "*.pt", "*.npy", "*.pth"]

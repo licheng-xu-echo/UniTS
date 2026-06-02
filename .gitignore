@@ -11,7 +11,10 @@ notebook/*.sdf
 notebook/*.xyz
 notebook/exported_xyz/**/*.xyz
 
-model_path/
+model_path/*.tar.gz
+**/model_path/**/*.pth
+**/model_path/**/*.npy
+
 rmsd_calc/
 MolOP-main/
 ts_initial_guess/

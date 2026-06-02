@@ -16,8 +16,8 @@ Here, we display some of the generation TS trajatories (from Formula-OOS test se
 | <img src="gif/b5_s24.gif" width="200"> | <img src="gif/b8_s10.gif" width="200"> | <img src="gif/b11_s2.gif" width="200"> | <img src="gif/b11_s7.gif" width="200"> |
 
 ## 🚀 Quick Start
-### Installation
-Current installation commands are tested for `PyTorch 2.4.0 + CUDA 12.4 + PyG cu124` only. You may switch versions if needed, but compatibility is not guaranteed.
+### Prepare environment
+Current installation commands are tested for `PyTorch 2.4.0 + CUDA 12.4 + PyG cu124` and `PyTorch 2.8.0 + CUDA 12.8 + PyG cu128` only. You may switch versions if needed, but compatibility is not guaranteed.
 
 ```
 conda create -n units python=3.11
@@ -32,39 +32,48 @@ unzip MolOP-main.zip
 cd MolOP-main
 pip install -e .
 cd ..
-pip install . -f https://data.pyg.org/whl/torch-2.4.0+cu124.html --extra-index-url https://download.pytorch.org/whl/cu124
+# before installing units, please download the UniTS-Gen model weights into units/model_path as described below
 ```
 **Note**: All codes were tested under Ubuntu 22.04.2 LTS
 
-### Model weights and dataset
+### Download model weights and dataset
 
 Option 1: download from modelscope (recommended)
 ```bash
 pip install modelscope
-# model checkpoints
-modelscope download --model 'XuLiCheng2025/UniTS-Gen-v1' --include 'model_path/*' --local_dir '.'
-# dataset
+# download all model checkpoints
+modelscope download --model 'XuLiCheng2025/UniTS-Gen-v1' --include 'model_path/*' --local_dir './units'
+# download specific model checkpoints
+modelscope download --model 'XuLiCheng2025/UniTS-Gen-v1' --include 'model_path/units_hiegnn/*' --local_dir './units'
+# download dataset
 modelscope download --model 'XuLiCheng2025/UniTS-Gen-v1' --include 'dataset/*' --local_dir '.'
 ```
 
 Option 2: download from figshare
 
-All model weights and preprocessed datasets are available via our [figshare](https://figshare.com/s/31bd730a3834435100dc) repository. Please put these files in `model_path` and `dataset` folders, like the following structure:
+All model weights and preprocessed datasets are also available via our [figshare](https://figshare.com/s/31bd730a3834435100dc) repository. Please put these files in `model_path` and `dataset` folders, like the following structure:
 ```
 UniTS
 |── units
-├── model_path
-│   ├── da_egnn/
-|   ├── da_hiegnn/
-|   ├── transition1x_egnn/
-|   ├── transition1x_hiegnn/
-│   ├── units_egnn/
-|   ├── units_hiegnn/
-|   └── ...
+│   └── model_path/
+│      ├── da_hiegnn/
+|      ├── da_egnn/
+|      ├── transition1x_hiegnn/
+|      ├── transition1x_egnn/
+|      ├── units_hiegnn/
+|      ├── units_egnn/
+|      └── ...
 |── dataset
 │   ├── UniTS_Lib.npy
 │   └── ...
 |── ...
+```
+### Installation
+
+```bash
+pip install . -f https://data.pyg.org/whl/torch-2.4.0+cu124.html --extra-index-url https://download.pytorch.org/whl/cu124
+# Note: if your GPU supports CUDA capabilities sm_120 (e.g. RTX 5090), you should install PyTorch 2.8 + CUDA 12.8
+cp pyproject_sm_120.toml pyproject.toml && pip install . -f https://data.pyg.org/whl/torch-2.8.0+cu128.html --extra-index-url https://download.pytorch.org/whl/cu128
 ```
 
 ## ⚛️ Model Training and Testing
@@ -90,33 +99,33 @@ python -u calc_rmsd.py --result_path ./sample_traj --result_tag traj-sample-repe
 
 ```bash
 # From SMILES to TS initial guess
-python units/infer_smiles.py \
+units-infer-smiles \
   --smiles '[H]C([H])([H])OCOC([H])([H])[H].[H]C1C(C([H])=O)C([H])([H])C([H])([H])C([H])([H])C1([H])[H]' \
   --reactive_atom_idx 5,12 \
   --charge 0 \
   --multi 1 \
-  --model_path ./model_path/units_hiegnn \
+  --model_type units_hiegnn \
   --num_samples 10 \
   --output_dir ./ts_initial_guess
 
 # Save whole generation trajactory
-python units/infer_smiles.py \
+units-infer-smiles \
   --smiles '[H]C([H])([H])OCOC([H])([H])[H].[H]C1C(C([H])=O)C([H])([H])C([H])([H])C([H])([H])C1([H])[H]' \
   --reactive_atom_idx 5,12 \
   --charge 0 \
   --multi 1 \
-  --model_path ./model_path/units_hiegnn \
+  --model_type units_hiegnn \
   --num_samples 10 \
   --output_dir ./ts_initial_guess \
   --save_full_trajectory True
 
 # Multi-SMILES
-python units/infer_smiles.py \
+units-infer-smiles \
   --smiles 'SMILES1' 'SMILES2' \
   --reactive_atom_idx site11,site12,site13 site21,site22  \
   --charge chrg1 chrg2 \
   --multi multi1 multi2 \
-  --model_path ./model_path/units_hiegnn \
+  --model_type units_hiegnn \
   --num_samples 10 \
   --output_dir ./ts_initial_guess
 ```
