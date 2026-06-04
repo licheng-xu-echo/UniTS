@@ -130,6 +130,16 @@ units-infer-smiles \
   --model_type units_hiegnn \
   --num_samples 10 \
   --output_dir ./ts_initial_guess
+
+# inference from xyz file, xyz file is used to generate 2D-graph only
+units-infer-xyz \
+--xyz ./example/xyz_input/demo1.xyz \
+--reactive_atom_idx 0,3,5 \
+--charge 0 \
+--multi 2 \
+--model_type units_hiegnn \
+--num_samples 10 \
+--output_dir ./ts_initial_guess
 ```
 Some usefull notebooks can be found in [notebook](https://github.com/licheng-xu-echo/UniTS/tree/main/notebook) folder. IRC results can be found in [irc_of_formula_oos_test_set](https://github.com/licheng-xu-echo/UniTS/tree/main/results/irc_of_formula_oos_test_set) folder.
 ## 📚 Citation
