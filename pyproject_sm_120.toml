@@ -57,6 +57,7 @@ Repository = "https://github.com/licheng-xu-echo/UniTS"
 [project.scripts]
 units-infer-smiles = "units.infer_smiles:main"
 units-infer-xyz = "units.infer_xyz:main"
+units-xyz2gjf = "units.xyz2gjf:main"
 
 [tool.setuptools.packages.find]
 include = ["units*"]

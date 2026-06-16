@@ -100,7 +100,7 @@ python -u calc_rmsd.py --result_path ./sample_traj --result_tag traj-sample-repe
 ## 🛠️ Basic Usage
 
 ```bash
-# From SMILES to TS initial guess
+# From SMILES to TS initial guess, here reactive_atom_idx is 0-based atom indices
 units-infer-smiles \
   --smiles '[H]C([H])([H])OCOC([H])([H])[H].[H]C1C(C([H])=O)C([H])([H])C([H])([H])C([H])([H])C1([H])[H]' \
   --reactive_atom_idx 5,12 \
@@ -110,7 +110,7 @@ units-infer-smiles \
   --num_samples 10 \
   --output_dir ./ts_initial_guess
 
-# Save whole generation trajactory
+# Save whole generation trajactory, here reactive_atom_idx is 0-based atom indices
 units-infer-smiles \
   --smiles '[H]C([H])([H])OCOC([H])([H])[H].[H]C1C(C([H])=O)C([H])([H])C([H])([H])C([H])([H])C1([H])[H]' \
   --reactive_atom_idx 5,12 \
@@ -121,7 +121,7 @@ units-infer-smiles \
   --output_dir ./ts_initial_guess \
   --save_full_trajectory True
 
-# Multi-SMILES
+# Multi-SMILES, here reactive_atom_idx is 0-based atom indices
 units-infer-smiles \
   --smiles 'SMILES1' 'SMILES2' \
   --reactive_atom_idx site11,site12,site13 site21,site22  \
@@ -131,7 +131,7 @@ units-infer-smiles \
   --num_samples 10 \
   --output_dir ./ts_initial_guess
 
-# inference from xyz file, xyz file is used to generate 2D-graph only
+# inference from xyz file, xyz file is used to generate 2D-graph only, here reactive_atom_idx is 0-based atom indices
 units-infer-xyz \
 --xyz ./example/xyz_input/demo1.xyz \
 --reactive_atom_idx 0,3,5 \
@@ -140,6 +140,34 @@ units-infer-xyz \
 --model_type units_hiegnn \
 --num_samples 10 \
 --output_dir ./ts_initial_guess
+
+# convert xyz to a Gaussian input for direct TS optimization
+units-xyz2gjf \
+  --xyz example/xyz_input/demo2.xyz \
+  --output example/xyz_input/demo2_direct.gjf \
+  --task_type direct_ts \
+  --nproc 16 \
+  --mem 32GB \
+  --method b3lyp \
+  --empirical_dispersion gd3bj \
+  --basis def2svp \
+  --charge 0 \
+  --multiplicity 1
+
+# convert xyz to a two-step Gaussian input: constrained optimization then TS search
+# freeze_bond uses Gaussian 1-based atom indices
+units-xyz2gjf \
+  --xyz example/xyz_input/demo3.xyz \
+  --output example/xyz_input/demo3_modts.gjf \
+  --task_type two_step_ts \
+  --freeze_bond 6,12 5,18 \
+  --nproc 16 \
+  --mem 32GB \
+  --method m062x \
+  --empirical_dispersion none \
+  --basis def2svp \
+  --charge 0 \
+  --multiplicity 1
 ```
 Some usefull notebooks can be found in [notebook](https://github.com/licheng-xu-echo/UniTS/tree/main/notebook) folder. IRC results can be found in [irc_of_formula_oos_test_set](https://github.com/licheng-xu-echo/UniTS/tree/main/results/irc_of_formula_oos_test_set) folder.
 ## 📚 Citation
