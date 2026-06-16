@@ -168,6 +168,29 @@ units-xyz2gjf \
   --basis def2svp \
   --charge 0 \
   --multiplicity 1
+
+# convert a trajectory xyz file to a gif, selected_frames means sampling one frame every N frames
+units-xyztraj2gif \
+  --xyz xyz_traj/b7_s3.xyz \
+  --output gif/b7_s3.gif \
+  --elev 90 \
+  --azim 90 \
+  --roll -95 \
+  --fps 30 \
+  --selected_frames 10
+
+# parse a Gaussian log, verify the TS, and export a vibrating xyz trajectory plus gif
+units-log2vibmode \
+  --log ./example/gau_log/gen_9.log \
+  --xyz_output ./example/gau_log/gen_9_vib.xyz \
+  --gif_output ./example/gau_log/gen_9_vib.gif \
+  --num_frames 100 \
+  --selected_frames 2 \
+  --elev 80 \
+  --azim 95 \
+  --roll -70 \
+  --fps 30 \
+  --covalent-factor 1.5
 ```
 Some usefull notebooks can be found in [notebook](https://github.com/licheng-xu-echo/UniTS/tree/main/notebook) folder. IRC results can be found in [irc_of_formula_oos_test_set](https://github.com/licheng-xu-echo/UniTS/tree/main/results/irc_of_formula_oos_test_set) folder.
 ## 📚 Citation

@@ -18,7 +18,8 @@ model_path/*.tar.gz
 
 rmsd_calc/
 MolOP-main/
-ts_initial_guess/
+ts_initial_guess*/
+tmp_*.xyz
 *.egg-info
 *.pyc
 *.pt
