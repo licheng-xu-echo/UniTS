@@ -32,31 +32,56 @@ def parse_xyz(xyz_path):
     if len(lines) < 3:
         raise ValueError(f"invalid xyz file: {xyz_path}")
 
-    try:
-        atom_count = int(lines[0].strip())
-    except ValueError as exc:
-        raise ValueError(f"invalid atom count in xyz file: {xyz_path}") from exc
+    frame_atoms = []
+    line_idx = 0
+    total_lines = len(lines)
 
-    coord_lines = [line for line in lines[2:] if line.strip()]
-    if len(coord_lines) != atom_count:
-        raise ValueError(
-            f"xyz atom count mismatch in {xyz_path}: header={atom_count}, coords={len(coord_lines)}"
-        )
+    while line_idx < total_lines:
+        while line_idx < total_lines and not lines[line_idx].strip():
+            line_idx += 1
+        if line_idx >= total_lines:
+            break
 
-    atoms = []
-    for line_idx, line in enumerate(coord_lines, start=3):
-        parts = line.split()
-        if len(parts) < 4:
-            raise ValueError(f"invalid xyz coordinate line {line_idx} in {xyz_path}")
-        symbol = parts[0]
         try:
-            x, y, z = (float(parts[1]), float(parts[2]), float(parts[3]))
+            atom_count = int(lines[line_idx].strip())
         except ValueError as exc:
             raise ValueError(
-                f"invalid xyz coordinate line {line_idx} in {xyz_path}"
+                f"invalid atom count at line {line_idx + 1} in xyz file: {xyz_path}"
             ) from exc
-        atoms.append((symbol, x, y, z))
-    return atoms
+
+        frame_start_line = line_idx + 1
+        if atom_count <= 0:
+            raise ValueError(
+                f"invalid atom count at line {frame_start_line} in xyz file: {xyz_path}"
+            )
+
+        if line_idx + 2 + atom_count > total_lines:
+            raise ValueError(
+                f"incomplete xyz frame starting at line {frame_start_line} in {xyz_path}"
+            )
+
+        coord_lines = lines[line_idx + 2 : line_idx + 2 + atom_count]
+        atoms = []
+        for coord_offset, line in enumerate(coord_lines, start=1):
+            parts = line.split()
+            if len(parts) < 4:
+                raise ValueError(
+                    f"invalid xyz coordinate line {line_idx + 2 + coord_offset} in {xyz_path}"
+                )
+            symbol = parts[0]
+            try:
+                x, y, z = (float(parts[1]), float(parts[2]), float(parts[3]))
+            except ValueError as exc:
+                raise ValueError(
+                    f"invalid xyz coordinate line {line_idx + 2 + coord_offset} in {xyz_path}"
+                ) from exc
+            atoms.append((symbol, x, y, z))
+        frame_atoms.append(atoms)
+        line_idx = line_idx + 2 + atom_count
+
+    if not frame_atoms:
+        raise ValueError(f"no valid xyz frame found in {xyz_path}")
+    return frame_atoms[-1]
 
 
 def normalize_dispersion(method, empirical_dispersion):
