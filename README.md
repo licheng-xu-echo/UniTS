@@ -171,13 +171,13 @@ units-xyz2gjf \
 
 # convert a trajectory xyz file to a gif, selected_frames means sampling one frame every N frames
 units-xyztraj2gif \
-  --xyz xyz_traj/b7_s3.xyz \
-  --output gif/b7_s3.gif \
-  --elev 90 \
-  --azim 90 \
-  --roll -95 \
+  --xyz ./example/xyz_input/demo4_traj.xyz \
+  --output ./example/xyz_input/demo4_traj.gif \
+  --elev 30 \
+  --azim 20 \
+  --roll -70 \
   --fps 30 \
-  --selected_frames 10
+  --selected_frames 5
 
 # parse a Gaussian log, verify the TS, and export a vibrating xyz trajectory plus gif
 units-log2vibmode \

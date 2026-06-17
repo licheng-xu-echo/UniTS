@@ -1,5 +1,4 @@
 import numpy as np
-import os
 import imageio
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
@@ -146,21 +145,19 @@ def plot_molecule(
 
 def plot_data3d_frame(
     frame_data: dict, 
-    frame_idx: int, 
-    save_dir: str, 
     bond_params: dict, 
     axis_lim: float,
     elev: float = 0.0,
     azim: float = 0.0,
     roll: float = 0.0,
-) -> str:
-    """Plots and saves a single frame."""
+) -> np.ndarray:
+    """Plots a single frame and returns it as an RGB image array."""
     
     atom_types = frame_data['atom_types']
     positions = frame_data['positions']
     
     # Center coordinates
-    positions -= positions.mean(axis=0)
+    positions = positions - positions.mean(axis=0)
     
     # Get dynamic bonds
     bonds = get_bonds_for_frame(atom_types, positions, **bond_params)
@@ -183,12 +180,12 @@ def plot_data3d_frame(
     # Plot the molecule
     plot_molecule(ax, atom_types, positions, bonds)
 
-    # Save image
-    save_path = os.path.join(save_dir, f'frame_{frame_idx:04d}.png')
-    plt.savefig(save_path, bbox_inches='tight', pad_inches=0.0, dpi=150)
+    # Render the frame directly from the canvas to avoid filesystem I/O.
+    fig.canvas.draw()
+    image = np.asarray(fig.canvas.buffer_rgba())[..., :3].copy()
     plt.close(fig)
     
-    return save_path
+    return image
 
 def visualize_and_animate_trajectory(
     xyz_file_path: str, 
@@ -207,11 +204,7 @@ def visualize_and_animate_trajectory(
     trajectory = load_xyz_trajectory(xyz_file_path)
     if selected_frames is not None:
         trajectory = [trajectory[i] for i in selected_frames]
-    temp_dir = 'temp_png_frames'
-    if not os.path.exists(temp_dir):
-        os.makedirs(temp_dir)
-        
-    all_save_paths = []
+    imgs = []
     
     # 1. Determine maximum coordinate extent for stable axis limits
     max_coords = max(np.abs(frame['positions']).max() for frame in trajectory)
@@ -223,23 +216,15 @@ def visualize_and_animate_trajectory(
         if (i + 1) % 100 == 0:
             print(f"  - Processing frame {i+1}/{len(trajectory)}...")
             
-        save_path = plot_data3d_frame(
-            frame_data, i, temp_dir, bond_params, axis_lim=plot_axis_lim, elev=elev, azim=azim, roll=roll
+        image = plot_data3d_frame(
+            frame_data, bond_params, axis_lim=plot_axis_lim, elev=elev, azim=azim, roll=roll
         )
-        all_save_paths.append(save_path)
+        imgs.append(image)
         
-    print(f"All {len(all_save_paths)} frames plotted. Generating GIF...")
+    print(f"All {len(imgs)} frames plotted. Generating GIF...")
 
     # 2. Generate GIF using imageio
-    imgs = [imageio.imread(fn) for fn in all_save_paths]
-    
     imageio.mimsave(output_gif_path, imgs, fps=fps)
     
     print(f"🎉 Animation successfully saved to: {output_gif_path}")
-    
-    # 3. Cleanup temporary files
-    for fn in all_save_paths:
-        os.remove(fn)
-    os.rmdir(temp_dir)
-    print("Temporary files cleaned up.")
     return imgs[-1]
